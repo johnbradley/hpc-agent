@@ -1,37 +1,15 @@
+import os
 import anthropic
 import gradio as gr
 from dotenv import load_dotenv
 import asyncio
-
-APP_TITLE = "RCC Helper 🧐"
-APP_INSTRUCTIONS = "Ask me anything about the Research Computing Center (RCC)."
-MODEL = "claude-3-5-sonnet-20241022"
-MAX_TOKENS = 1000
-SYSTEM_PROMPT = """
-You are a helpful assistant that answers questions about the Research Computing Center (RCC).
-RCC is a Slurm based Linux system with OpenOnDemand and globus.
-Provide clear, concise, and accurate information about HPC resources, computing services, and documentation.
-If you don't know something, say so rather than making up information.
-Prefer slurm commands over other commands.
-Here are some important RCC resources to refer to when answering questions:
-
-
-- https://slurm.schedmd.com/sbatch.html - Help on the sbatch command
-- https://slurm.schedmd.com/srun.html - Help on the srun command
-
-When answering questions, refer to these resources for accurate and up-to-date information.
-
-"""
-EXAMPLES = [
-    {"text":"how to run background job"},
-    {"text":"how to build a container"},
-    {"text":"how to create a conda environment with pytorch"},
-]
+from hpca.config import AgentConfig
 
 
 # Load the Anthropic API key from the environment variable
 load_dotenv()
 client = anthropic.Anthropic()
+config = AgentConfig(directory_path=os.environ.get("AGENT_CONFIG_DIR", "agent-config"))
 
 
 def format_messages(messages):
@@ -46,10 +24,10 @@ def format_messages(messages):
 
 def predict(history):
     with client.messages.stream(
-        model=MODEL,
-        max_tokens=MAX_TOKENS,
+        model=config.model,
+        max_tokens=config.max_tokens,
         temperature=0,
-        system=SYSTEM_PROMPT,
+        system=config.system_prompt,
         messages=format_messages(history)
     ) as stream:
         for event in stream:
@@ -71,11 +49,11 @@ def append_example_message(x: gr.SelectData, history):
 
 
 with gr.Blocks() as demo:
-    gr.Markdown(APP_TITLE)
-    gr.Markdown(APP_INSTRUCTIONS)
+    gr.Markdown(config.app_title)
+    gr.Markdown(config.app_instructions)
 
     chatbot = gr.Chatbot(
-        examples=EXAMPLES,
+        examples=config.examples,
         type='messages',
     )
     msg = gr.Textbox(placeholder="Type your question here...", scale=4)

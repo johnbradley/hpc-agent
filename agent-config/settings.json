@@ -1,0 +1,11 @@
+{
+    "app_title": "RCC Helper 🧐",
+    "app_instrucutions": "Ask me anything about the Research Computing Center (RCC).",
+    "model": "claude-3-5-sonnet-20241022",
+    "max_tokens": 1000,
+    "examples": [
+        {"text":"how to run background job"},
+        {"text":"how to build a container"},
+        {"text":"how to create a conda environment with pytorch"}
+    ]
+}
